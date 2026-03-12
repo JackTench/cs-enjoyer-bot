@@ -8,6 +8,11 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = discord.Bot(intents = intents)
 
+# Log to console when logging in to discord.
+@bot.event
+async def on_ready():
+    print(f"Logged in as {bot.user}")
+
 # Connect bot to discord network.
 token = os.getenv("DISCORD_TOKEN")
 bot.run(token)
