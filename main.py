@@ -15,4 +15,6 @@ async def on_ready():
 
 # Connect bot to discord network.
 token = os.getenv("DISCORD_TOKEN")
+if not token:
+    raise RuntimeError("DISCORD_TOKEN is missing from environment variables!")
 bot.run(token)
