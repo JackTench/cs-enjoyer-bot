@@ -14,6 +14,9 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = discord.Bot(intents = intents)
 
+# Load cogs to register commands.
+bot.load_extension("cogs.network")
+
 # Log to console when logging in to discord.
 @bot.event
 async def on_ready():

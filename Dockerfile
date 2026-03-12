@@ -4,6 +4,6 @@ WORKDIR /bot
 
 RUN pip install py-cord
 
-COPY *.py ./
+COPY . /bot
 
 CMD ["python", "main.py"]
