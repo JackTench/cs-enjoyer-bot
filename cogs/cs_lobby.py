@@ -10,7 +10,8 @@ from services.cs_lobby import (
     LobbyAlreadyExists,
     LobbyClosed,
     LobbyFull,
-    LobbyNotFound
+    LobbyNotFound,
+    NotInLobby,
 )
 
 class JoinLobbyButton(discord.ui.Button):
@@ -65,6 +66,35 @@ class JoinLobbyButton(discord.ui.Button):
             except Exception as err:
                 print(f"Failed to close full lobby: {err}")
 
+class LeaveLobbyButton(discord.ui.Button):
+    def __init__(self, cog: "CogCounterStrikeLobby", lobby_id: str, disabled: bool):
+        super().__init__(
+            style = discord.ButtonStyle.secondary,
+            label = "Leave",
+            custom_id = f"leave:{lobby_id}",
+            disabled = disabled,
+        )
+        self.cog = cog
+
+    async def callback(self, interaction: discord.Interaction):
+        if interaction.message is None:
+            return
+
+        try:
+            lobby = self.cog.service.leave_lobby(
+                interaction.message.id,
+                interaction.user.id,
+            )
+        except NotInLobby as e:
+            return
+        except LobbyClosed as e:
+            return
+
+        await interaction.response.edit_message(
+            embed = self.cog.build_embed(lobby),
+            view = self.cog.build_view(lobby),
+        )
+
 class CogCounterStrikeLobby(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -110,6 +140,13 @@ class CogCounterStrikeLobby(commands.Cog):
                 lobby_id = lobby.id,
                 label = f"Join({len(lobby.players)}/5)",
                 disabled = (lobby.status != "open" or len(lobby.players) >= 5),
+            )
+        )
+        view.add_item(
+            LeaveLobbyButton(
+                cog = self,
+                lobby_id = lobby.id,
+                disabled = (lobby.status != "open")
             )
         )
         return view

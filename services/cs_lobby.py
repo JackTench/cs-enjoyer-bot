@@ -17,6 +17,8 @@ class LobbyFull(LobbyError):
     pass
 class AlreadyJoined(LobbyError):
     pass
+class NotInLobby(LobbyError):
+    pass
 
 # Define class for single lobby.
 @dataclass
@@ -97,6 +99,18 @@ class ServiceCounterStrikeLobby:
 
         # Add player' ID to lobby.
         lobby.players.add(user_id)
+        return lobby
+
+    def leave_lobby(self, message_id: int, user_id: int) -> Lobby:
+        lobby = self.get_lobby_by_message(message_id)
+
+        if user_id not in lobby.players:
+            raise NotInLobby("You are not in this lobby.")
+
+        if not lobby.is_open:
+            raise LobbyClosed("This signup has already closed.")
+
+        lobby.players.remove(user_id)
         return lobby
 
     def close_lobby(self, message_id: int, reason: str) -> Lobby:
