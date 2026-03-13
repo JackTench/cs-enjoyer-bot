@@ -11,11 +11,12 @@ asyncio.set_event_loop(loop)
 
 # Set up bot.
 intents = discord.Intents.default()
-intents.message_content = True
+intents.message_content = False
 bot = discord.Bot(intents = intents)
 
 # Load cogs to register commands.
 bot.load_extension("cogs.network")
+bot.load_extension("cogs.cs_lobby")
 
 # Log to console when logging in to discord.
 @bot.event
