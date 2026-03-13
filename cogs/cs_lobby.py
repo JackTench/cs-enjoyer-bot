@@ -86,8 +86,10 @@ class LeaveLobbyButton(discord.ui.Button):
                 interaction.user.id,
             )
         except NotInLobby as e:
+            await interaction.response.send_message(str(e), ephemeral=True)
             return
         except LobbyClosed as e:
+            await interaction.response.send_message(str(e), ephemeral=True)
             return
 
         await interaction.response.edit_message(
