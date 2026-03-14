@@ -74,6 +74,26 @@ class ServiceCounterStrikeLobby:
         )
         return lobby
 
+    def create_lobby_with_expiry(self, channel_id: int, host_id: int, expires_at: int) -> Lobby:
+        # Fail to create if lobby already exists in the given channel.
+        if self.has_open_lobby_in_channel(channel_id):
+            raise LobbyAlreadyExists("There is already an open signup in this channel.")
+
+        now = int(time.time() * 1000)
+        # Check lobby must end in the future.
+        if expires_at <= now:
+            raise LobbyError("The signup end time must be in the future.")
+
+        lobby = Lobby(
+            id = f"{channel_id}-{now}",
+            channel_id = channel_id,
+            host_id = host_id,
+            players = {host_id},
+            status = "open",
+            expires_at = expires_at,
+        )
+        return lobby
+
     def attach_message(self, lobby: Lobby, message_id: int):
         lobby.message_id = message_id
         self._lobbies[message_id] = lobby
