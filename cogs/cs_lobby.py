@@ -133,7 +133,7 @@ class CogCounterStrikeLobby(commands.Cog):
                 [
                     f"**Host:** <@{lobby.host_id}>",
                     f"**Players:** {len(lobby.players)}/5",
-                    f"**Closes:** {discord.utils.format_dt(end_dt, style = 'F')}"
+                    f"**Closes:** {discord.utils.format_dt(end_dt, style = 'F')}",
                     f"**Time remaining:** {time_remaining}",
                     "",
                     "**Roster**",
