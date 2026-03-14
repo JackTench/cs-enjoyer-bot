@@ -215,5 +215,9 @@ class CogCounterStrikeLobby(commands.Cog):
             )
         )
 
+    @discord.slash_command(name = "wanttoplaylater", description = "Start a Counter-Strike lobby with a given end time")
+    async def wanttoplaylater(self, ctx: discord.ApplicationContext, time: str):
+        return
+
 def setup(bot: commands.Bot):
     bot.add_cog(CogCounterStrikeLobby(bot))
