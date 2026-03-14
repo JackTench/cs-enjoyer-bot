@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 
 import discord
 from discord.ext import commands
@@ -120,12 +121,18 @@ class CogCounterStrikeLobby(commands.Cog):
             else "Ended"
         )
 
+        end_dt = datetime.datetime.fromtimestamp(
+            lobby.expires_at / 1000,
+            tz = datetime.timezone.utc,
+        )
+
         return discord.Embed(
             title = title,
             description = "\n".join(
                 [
                     f"**Host:** <@{lobby.host_id}>",
                     f"**Players:** {len(lobby.players)}/5",
+                    f"**Closes:** {discord.utils.format_dt(end_dt, style = 'F')}"
                     f"**Time remaining:** {time_remaining}",
                     "",
                     "**Roster**",
