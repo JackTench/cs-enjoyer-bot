@@ -187,6 +187,27 @@ class CogCounterStrikeLobby(commands.Cog):
         except Exception as err:
             print(f"Failed to expire lobby: {err}")
 
+    def parse_hhmm_today_or_tomorrow(self, value: str) -> datetime.datetime:
+        # Example input: 21:30.
+        try:
+            hour, minute = map(int, value.split(":"))
+        except ValueError:
+            raise ValueError("Time must be in HH:MM format, for example 21:30.")
+
+        # Check validity of times. Deny 28:30 etc.
+        if not (0 <= hour <= 23 and 0 <= minute <= 59):
+            raise ValueError("Time must be a valid 24-hour time.")
+
+        local_tz = datetime.datetime.now().astimezone().tzinfo
+        now = datetime.datetime.now(tz = local_tz)
+
+        target = now.replace(hour = hour, minute = minute, second = 0, microsecond = 0)
+        # Times in the past roll over into tomorrow's time.
+        if target <= now:
+            target += datetime.timedelta(days = 1)
+
+        return target
+
     @discord.slash_command(name = "wanttoplay", description = "Start a Counter-Strike lobby")
     async def wanttoplay(self, ctx: discord.ApplicationContext):
         # Check command is being run in a server channel.
