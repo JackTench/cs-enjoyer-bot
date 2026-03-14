@@ -7,6 +7,7 @@ from discord.ext import commands
 from services.cs_lobby import (
     Lobby,
     ServiceCounterStrikeLobby,
+    LobbyError,
     AlreadyJoined,
     LobbyAlreadyExists,
     LobbyClosed,
@@ -245,7 +246,53 @@ class CogCounterStrikeLobby(commands.Cog):
 
     @discord.slash_command(name = "wanttoplaylater", description = "Start a Counter-Strike lobby with a given end time")
     async def wanttoplaylater(self, ctx: discord.ApplicationContext, time: str):
-        return
+        # Check command is being run in a server channel.
+        if ctx.channel is None:
+            await ctx.respond("This command can only be used in a server channel.", ephemeral = True)
+            return
+
+        try:
+            # Parse time.
+            target_dt = self.parse_hhmm_today_or_tomorrow(time)
+            expires_at_ms = int(target_dt.timestamp() * 1000)
+
+            # Register lobby via service class.
+            lobby = self.service.create_lobby_with_expiry(
+                channel_id = ctx.channel.id,
+                host_id = ctx.user.id,
+                expires_at = expires_at_ms,
+            )
+        # Fail if ValueError is thrown.
+        except ValueError as e:
+            await ctx.respond(str(e), ephemeral = True)
+            return
+        # Fail if lobby already exists in context.
+        except LobbyAlreadyExists as e:
+            await ctx.respond(str(e), ephemeral = True)
+            return
+        # LobbyError case handle.
+        except LobbyError as e:
+            await ctx.respond(str(e), ephemeral = True)
+            return
+
+        await ctx.respond(
+            content = f"Signup created. It will close {discord.utils.format_dt(target_dt, style = 'F')}",
+            embed = self.build_embed(lobby),
+            view = self.build_view(lobby),
+        )
+
+        message = await ctx.interaction.original_response()
+        self.service.attach_message(lobby, message.id)
+
+        delay_seconds = max(1, int((target_dt - datetime.datetime.now(target_dt.tzinfo)).total_seconds()))
+
+        asyncio.create_task(
+            self.expire_lobby_after_delay(
+                channel_id = ctx.channel.id,
+                message_id = message.id,
+                delay_seconds = delay_seconds,
+            )
+        )
 
 def setup(bot: commands.Bot):
     bot.add_cog(CogCounterStrikeLobby(bot))
